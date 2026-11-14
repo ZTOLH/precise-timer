@@ -1,0 +1,44 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 编译（csc.exe，.NET Framework 4.x 自带）
+        shell: powershell
+        run: ./build.ps1
+
+      - name: 检查产物
+        shell: powershell
+        run: |
+          $exe = Get-Item ./PreciseTimer.exe
+          Write-Output ("PreciseTimer.exe = {0} bytes" -f $exe.Length)
+          $info = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($exe.FullName)
+          Write-Output ("ProductName = " + $info.ProductName)
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: PreciseTimer
+          path: PreciseTimer.exe
+          if-no-files-found: error
+
+      - name: 打标签时发布 Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create $env:GITHUB_REF_NAME ./PreciseTimer.exe --title $env:GITHUB_REF_NAME --notes "PreciseTimer $env:GITHUB_REF_NAME — 单文件毫秒计时器" --repo $env:GITHUB_REPOSITORY

@@ -1,0 +1,19 @@
+# 构建产物
+PreciseTimer.exe
+
+# 运行时数据（计时记录保存在程序同目录）
+timer-data.json
+
+# 验证脚本产生的临时目录
+validation/
+
+# 本地临时脚本
+shot.ps1
+crop.py
+
+# 系统与编辑器
+Thumbs.db
+desktop.ini
+.vs/
+*.user
+*.suo
